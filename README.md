@@ -1,6 +1,6 @@
-# Raspberry Pi 400 and Pi 500as a USB HID Keyboard & Mouse <!-- omit in toc -->
+# Pi 500+ HID & Ethernet Gadget <!-- omit in toc -->
 
-Hook your Pi 400 up to your PC somehow, using a USB Type-C cable into the *power* port of the Pi.
+Hook your Pi 400 or Pi 500 up to your host using a USB Type-C cable into the *power* port of the Pi.
 Anker make good ones- I used a 3m white one for my tests.
 
 Our USB-C to USB-A is great if you're using a USB-A port (but make sure it's a *high power* one): https://shop.pimoroni.com/products/usb-c-to-usb-a-cable-1m-black
@@ -27,13 +27,18 @@ Reboot!
 
 `sudo modprobe libcomposite`
 
-Grab the latest pi400kb for your system from releases: https://github.com/Gadgetoid/pi400kb/releases
+If you also want Ethernet over USB (ECM) alongside the HID gadget:
 
-`chmod +x pi400kb`
+- Ensure you have a NetworkManager connection configured for `usb0` (the defaults expect one named `ethernet-usb0`, see [Pi5-ethernet-and-power-over-usbc.md](./Pi5-ethernet-and-power-over-usbc.md) for guidance).
+- The gadget will bring that connection up automatically when the device is grabbed, and tear it down on exit.
 
-`sudo ./pi400kb`
+Grab the latest pi500usb build for your system from releases: https://github.com/Gadgetoid/pi400kb/releases
 
-:sparkles: YOUR PI 400 IS NOW A FREAKING KEYBOARD & MOUSE FOR YOUR PC WHAAAAT!? :sparkles: 
+`chmod +x pi500usb`
+
+`sudo ./pi500usb`
+
+:sparkles: YOUR PI 500+ IS NOW A FREAKING KEYBOARD, MOUSE, AND USB ETHERNET FOR YOUR HOST :sparkles:
 
 Your keyboard input will be detached from your Pi while it's forwarded to your host computer.
 
@@ -45,37 +50,21 @@ Press `Ctrl + Shift + Raspberry` (on the grabbed keyboard) to exit.
 
 Pi 400 KB supports the official Raspberry Pi Mouse VID:PID = 093a:2510 by default, but other mice should work.
 
-### Autostart
+### Autostart with systemd
 
 ```
-sudo cp pi400kb /usr/bin/pi400kb
-sudo systemctl edit --force --full pi400kb.service
+sudo install -m 0755 pi500usb /usr/bin/pi500usb
+sudo install -m 0644 pi500usb.service /etc/systemd/system/pi500usb.service
+sudo install -m 0644 pi500usb.conf /etc/modules-load.d/pi500usb.conf
+sudo systemctl daemon-reload
+sudo systemctl enable --now pi500usb.service
 ```
 
-Add the contents of the `pi400kb.service` file.
-
-Start the service and check its status:
-
-```
-sudo systemctl start pi400kb.service
-sudo systemctl status pi400kb.service
-```
-
-Enable start on boot if it's okay:
-
-```
-sudo systemctl enable pi400kb.service
-```
-
-Finally copy pi400kb.conf into /etc/modules-load.d/:
-
-```
-sudo cp pi400kb.conf /etc/modules-load.d/
-```
+The service runs as root, loads `libcomposite`/`usb_f_ecm`, and brings up the `ethernet-usb0` NetworkManager profile on boot.
 
 ## Building & Contributing
 
-### Building
+### Building (out of date)
 
 ```
 sudo apt install libconfig-dev git cmake

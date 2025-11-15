@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(pi400kb)
+project(pi500usb)
 
 # for asprintf
 set(CMAKE_C_STANDARD 99)
@@ -11,7 +11,7 @@ add_compile_definitions(_GNU_SOURCE)
 option(NO_OUTPUT "Disable USB HID output" OFF)
 
 if(NOT HOOK_PATH)
-    set(HOOK_PATH "/home/pi/pi400kb/hook.sh" CACHE STRING "Path to .sh toggle hook")
+    set(HOOK_PATH "/home/pi/pi500usb/hook.sh" CACHE STRING "Path to .sh toggle hook")
 endif()
 
 if(NOT KEYBOARD_VID)
@@ -37,6 +37,26 @@ endif()
 
 if(NOT MOUSE_DEV)
     set(MOUSE_DEV "/dev/input/by-id/usb-PixArt_USB_Optical_Mouse-event-mouse" CACHE STRING "Device path for mouse")
+endif()
+
+if(NOT ECM_DEV_ADDR)
+    set(ECM_DEV_ADDR "02:00:00:00:cf:01" CACHE STRING "Device MAC address for ECM gadget")
+endif()
+
+if(NOT ECM_HOST_ADDR)
+    set(ECM_HOST_ADDR "02:00:00:00:cf:02" CACHE STRING "Host MAC address for ECM gadget")
+endif()
+
+if(NOT ECM_QMULT)
+    set(ECM_QMULT "5" CACHE STRING "Queue multiplier for ECM gadget")
+endif()
+
+if(NOT ECM_NM_CONNECTION)
+    set(ECM_NM_CONNECTION "ethernet-usb0" CACHE STRING "NetworkManager connection name to activate automatically (empty to disable)")
+endif()
+
+if(NOT ECM_FORCE_UDC)
+    set(ECM_FORCE_UDC "" CACHE STRING "Explicit UDC name to bind the gadget to (empty to auto-detect)")
 endif()
 
 
@@ -83,12 +103,12 @@ find_library(libconfig libconfig)
 target_link_libraries(libusbgx INTERFACE config)
 
 add_executable(
-    pi400kb
+    pi500usb
     pi400.c
     gadget-hid.c
 )
 
-target_compile_definitions(pi400kb PRIVATE
+target_compile_definitions(pi500usb PRIVATE
     HAS_GADGET_SCHEMES
 
     HOOK_PATH="${HOOK_PATH}"
@@ -100,22 +120,29 @@ target_compile_definitions(pi400kb PRIVATE
     KEYBOARD_VID=${KEYBOARD_VID}
     KEYBOARD_PID=${KEYBOARD_PID}
     KEYBOARD_DEV="${KEYBOARD_DEV}"
+
+    ECM_DEV_ADDR="${ECM_DEV_ADDR}"
+    ECM_HOST_ADDR="${ECM_HOST_ADDR}"
+    ECM_QMULT=${ECM_QMULT}
+    ECM_NM_CONNECTION="${ECM_NM_CONNECTION}"
+    ECM_FORCE_UDC="${ECM_FORCE_UDC}"
 )
 
 if(NO_OUTPUT)
-    target_compile_definitions(pi400kb PRIVATE NO_OUTPUT)
+    target_compile_definitions(pi500usb PRIVATE NO_OUTPUT)
 endif()
 
-target_link_libraries(pi400kb libusbgx)
+target_link_libraries(pi500usb libusbgx)
 
 install(FILES
     ${CMAKE_CURRENT_LIST_DIR}/hook.sh
-    ${CMAKE_CURRENT_LIST_DIR}/pi400kb.service
+    ${CMAKE_CURRENT_LIST_DIR}/pi500usb.service
+    ${CMAKE_CURRENT_LIST_DIR}/pi500usb.conf
     ${CMAKE_CURRENT_LIST_DIR}/README.md
     DESTINATION .
 )
 
-install(TARGETS pi400kb DESTINATION .)
+install(TARGETS pi500usb DESTINATION .)
 
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 set(CPACK_GENERATOR "ZIP" "TGZ")

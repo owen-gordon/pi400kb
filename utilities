@@ -1,0 +1,3 @@
+nmcli dev status
+
+sudo systemctl status pi500usb.service

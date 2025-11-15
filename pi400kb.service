@@ -1,10 +1,10 @@
 [Unit]
-Description=pi400kb USB OTG Keyboard & Mouse forwarding
+Description=pi500usb USB HID + ECM gadget service
 
 [Service]
-ExecStart=/usr/bin/pi400kb
-User=root   
-Group=root   
+ExecStart=/usr/bin/pi500usb
+User=root
+Group=root
 Type=simple
 Restart=on-failure
 

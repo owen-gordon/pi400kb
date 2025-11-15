@@ -20,7 +20,7 @@
 #define EVIOC_GRAB 1
 #define EVIOC_UNGRAB 0
 
-int hid_output;
+int hid_output = -1;
 volatile int running = 0;
 volatile int grabbed = 0;
 
@@ -44,6 +44,16 @@ bool modprobe_libcomposite() {
     if (pid < 0) return false;
     if (pid == 0) {
         char* const argv[] = {"modprobe", "libcomposite", NULL};
+        execv("/usr/sbin/modprobe", argv);
+        exit(0);
+    }
+    waitpid(pid, NULL, 0);
+
+    pid = fork();
+
+    if (pid < 0) return false;
+    if (pid == 0) {
+        char* const argv[] = {"modprobe", "usb_f_ecm", NULL};
         execv("/usr/sbin/modprobe", argv);
         exit(0);
     }
@@ -259,9 +269,13 @@ int main() {
     send_empty_hid_reports_both();
 
 #ifndef NO_OUTPUT
-    printf("Cleanup USB\n");
-    cleanupUSB();
+    if (hid_output != -1) {
+        close(hid_output);
+        hid_output = -1;
+    }
 #endif
+
+    cleanupUSB();
 
     return 0;
 }

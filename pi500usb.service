@@ -1,0 +1,14 @@
+[Unit]
+Description=pi500usb USB HID + ECM gadget service
+Wants=NetworkManager.service network-online.target
+After=systemd-modules-load.service NetworkManager.service network-online.target
+
+[Service]
+Type=simple
+ExecStartPre=/usr/sbin/modprobe libcomposite
+ExecStartPre=/usr/sbin/modprobe usb_f_ecm
+ExecStart=/usr/bin/pi500usb
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
